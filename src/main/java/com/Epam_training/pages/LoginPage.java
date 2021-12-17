@@ -8,15 +8,18 @@ import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
 
 public class LoginPage extends BasePage {
 
+    //Textbox
     @FindBy(css ="#username")
     private WebElement userTextBox;
 
     @FindBy(css ="#password")
     private WebElement passwordTextBox;
 
+    //Buttons
     @FindBy(css ="p:nth-child(3) > input.woocommerce-Button.button")
     private WebElement submitButton;
 
+    //Labels or messages
     @FindBy(css =".woocommerce-MyAccount-content")
     private WebElement welcomeMessage;
 
@@ -29,16 +32,31 @@ public class LoginPage extends BasePage {
         PageFactory.initElements(new AjaxElementLocatorFactory(driver,30),this);
     }
 
+    /**
+     * Metodo que diligencia los campos de user y password y el
+     * correspondiente boton de submit
+     * @param user recibe un String como parametro este se puede enviar con ""
+     * @param password recibe un String como parametro este se puede enviar con ""
+     */
     public void signIn(String user, String password){
         userTextBox.sendKeys(user);
         passwordTextBox.sendKeys(password);
         submitButton.click();
     }
 
+    /**
+     * Metodo que lee y retorna el mensajede bienvenida una vez logeados
+     * @return
+     */
     public String getWelcomeMessage(){
         return welcomeMessage.getText();
     }
 
+    /**
+     * Metodo que retorna el mensaje de error mostrado por la pagina una vez
+     * ingresadas credenciales invalidas
+     * @return
+     */
     public String getErrorMessage(){
         return errorMessage.getText();
     }
