@@ -2,8 +2,15 @@ package com.Epam_training.hooks;
 
 import com.Epam_training.pages.HomePage;
 import io.cucumber.java.After;
+
+import io.cucumber.java.AfterStep;
 import io.cucumber.java.Before;
+
+import io.cucumber.java.Scenario;
 import io.github.bonigarcia.wdm.WebDriverManager;
+
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
@@ -38,6 +45,15 @@ public class BaseTests {
     public static void goTo(String url){
         driver.get(url);
     }
+
+    @AfterStep
+    public void addScreenshot(Scenario scenario){
+
+        final byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+        scenario.attach(screenshot, "image/png", "image");
+
+    }
+
 
     public static HomePage loadingHomePage(){
         return new HomePage(driver);
