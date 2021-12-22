@@ -61,5 +61,11 @@ public class LoginPage extends BasePage {
         return errorMessage.getText();
     }
 
-
+    /**
+     * Metodo para validar que el campo password tenga la propiedad type=password
+     * @return boolean
+     */
+    public boolean validatePasswordElement() {
+        return passwordTextBox.getAttribute("type").equals("password");
+    }
 }

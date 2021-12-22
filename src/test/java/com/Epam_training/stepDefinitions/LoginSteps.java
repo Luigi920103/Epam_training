@@ -43,4 +43,11 @@ public class LoginSteps {
                 , loginPage.getErrorMessage().contains(errorMessage));
         System.out.println("Mensaje de error" + errorMessage);
     }
+
+    @Then("password field must has attribute type equal to password")
+    public void password_field_must_has_attribute_type_equal_to_password() {
+        Assert.assertTrue("The password field has the attribute type equal to password"
+                , loginPage.validatePasswordElement());
+
+    }
 }

@@ -4,6 +4,9 @@ Feature: Login
     And the user selects "My Account" button
 
   @RegularTest
+  Scenario Outline: Masked Password
+    Then password field must has attribute type equal to password
+
   Scenario Outline: Login successful
     When it log in with the credentials <user>, <password>
     Then it must successfully log in to the web page
