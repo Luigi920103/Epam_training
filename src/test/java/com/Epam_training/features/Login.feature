@@ -1,26 +1,27 @@
 Feature: Login
+
   Background:
     Given the user navigates to "http://practice.automationtesting.in/"
     And the user selects "My Account" button
 
   @RegularTest
-  Scenario Outline: Masked Password
+  Scenario: L001 Masked Password
     Then password field must has attribute type equal to password
 
-  Scenario Outline: Login successful
-    When it log in with the credentials <user>, <password>
+  @RegularTest
+  Scenario: L002 Login successful
+    When it log in with the correct credentials
     Then it must successfully log in to the web page
-    Examples:
-      |user					                    |password		    |
-      |"bouquauraufroiku-4172@yopmail.com"		|"EpamTraining2021*"|
 
-  Scenario Outline: Login unsuccessful
-    When it log in with the credentials <user>, <password>
-    Then the webpage must show <error_Message>
+  @RegularTest
+  Scenario Outline: L003 Login unsuccessful "<case>"
+    When it log in with the credentials "<user>", "<password>"
+    Then the webpage must show "<error_Message>"
     Examples:
-      |user					              |password				  |error_Message				    |
-      |"incorrectUser"		              |"incorrectPassword"	  |"Invalid username"			    |
-      |"bouquauraufroiku-4172@yopmail.com"|""					  |"Password is required"			|
-      |""					              |"EpamTraining2021*"	  |"Username is required"			|
-      |"bouquauraufroiku-4172@yopmail.com"|"ePAMtRAINING2021"     |"The password you entered for the username"	|
+      | case                    | user          | password          | error_Message                             |
+      | Incorrect credentials   | incorrectUser | incorrectPassword | Invalid username                          |
+      | Empty password          | Correct       |                   | Password is required                      |
+      | Empty user              |               | Correct           | Username is required                      |
+      | Empty user and password |               |                   | Username is required                      |
+      | Handles case sensitive  | Correct       | ePAMtRAINING2021  | The password you entered for the username |
 
