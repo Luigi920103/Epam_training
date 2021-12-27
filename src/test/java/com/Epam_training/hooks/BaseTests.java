@@ -11,13 +11,14 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 public class BaseTests {
     public static WebDriver driver;
-    public static  Properties appProps;
+    public static Properties appProps;
 
     /**
      * En esta clase cargamos las configuraciones del sistema y definimos el webdriver o navegador
@@ -25,9 +26,9 @@ public class BaseTests {
      * por defecto el navegador de Chrome como ejecutor de pruebas
      */
     @Before
-    public void openNavigator(){
+    public void openNavigator() {
         //Carga de propiedades
-        String appConfigPath ="src/test/resources/config.properties";
+        String appConfigPath = "src/test/resources/config.properties";
         appProps = new Properties();
         try {
             appProps.load(new FileInputStream(appConfigPath));
@@ -35,11 +36,11 @@ public class BaseTests {
             e.printStackTrace();
         }
         //Seleccion de webdriver
-        if(appProps.getProperty("navigator").equals("Firefox")){
+        if (appProps.getProperty("navigator").equals("Firefox")) {
             WebDriverManager.firefoxdriver().setup();
             driver = (new FirefoxDriver());
             cleanNavigator();
-        }else {
+        } else {
             WebDriverManager.chromedriver().setup();
             driver = (new ChromeDriver());
             cleanNavigator();
@@ -50,7 +51,7 @@ public class BaseTests {
      * Esta clase cerrara nuestro navegador o webdriver tras la ejecucin de cada una de las pruebas establecidads
      */
     @After
-    public void closeNavigator(){
+    public void closeNavigator() {
         driver.quit();
     }
 
@@ -73,19 +74,21 @@ public class BaseTests {
 
     /**
      * Este metodo nos permitira usar nuestro webdriver para navegar a cualquier URL
+     *
      * @param url parametro que recibe un String y se espera que se indique la URL deseada en este
      */
-    public static void goTo(String url){
+    public static void goTo(String url) {
         driver.get(url);
     }
 
     /**
      * Este parametro sera el responsable de la toma de evidencias tras la ejecucion de cada paso de prueba
      * guardando una foto por cada paso como correspondiente evidencia
+     *
      * @param scenario
      */
     @AfterStep
-    public void addScreenshot(Scenario scenario){
+    public void addScreenshot(Scenario scenario) {
         final byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
         scenario.attach(screenshot, "image/png", "image");
     }
@@ -93,9 +96,10 @@ public class BaseTests {
     /**
      * Metodo de inicializacion nos permitira pasar el webdriver a la pagina principal o inicial entregando
      * un objeto de este tipo el cual permitira la interaccion con sus elementos
+     *
      * @return objeto de tipo Homepage que permitira la interaccion con sus elementos
      */
-    public static HomePage loadingHomePage(){
+    public static HomePage loadingHomePage() {
         return new HomePage(driver);
     }
 
