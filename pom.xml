@@ -11,6 +11,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <cucumber.version>7.1.0</cucumber.version>
+        <assertj.version>3.21.0</assertj.version>
         <webDriverManager.version>5.0.3</webDriverManager.version>
         <selenium.version>4.1.0</selenium.version>
         <extentreports.cucumber7>1.1.0</extentreports.cucumber7>
@@ -28,6 +29,12 @@
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
             <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

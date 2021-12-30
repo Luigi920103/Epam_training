@@ -1,4 +1,4 @@
-package com.Epam_training.pages;
+package com.epam_training.pages;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;

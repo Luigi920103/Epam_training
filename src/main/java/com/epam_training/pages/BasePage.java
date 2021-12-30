@@ -1,11 +1,14 @@
-package com.Epam_training.pages;
+package com.epam_training.pages;
 
+import com.epam_training.properties.ReaderOfProperties;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+
 import java.util.ArrayList;
+
 
 /**
  * Pagina base de la cual heredaran las otras paginas de tipo pages contiene metodos que pueden ser aprovechados
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 public class BasePage {
     private WebDriver driver;
     protected WebDriverWait wait;
+    ReaderOfProperties readProperty = new ReaderOfProperties();
 
     /**
      * Constructor de Clase padre el cual contiene el driver y la creacion como tal del elemento wait
@@ -56,8 +60,20 @@ public class BasePage {
      * Metodo que nos ayudara a identificar la existencia de un elemento en la pagina en la que nos encontremos
      * y que este sea clickeable
      *
-     * @param object Elemento de tipo webelement que se desea validar
+     * @param object Elemento de tipo By que se desea validar
      */
+    protected boolean validationClickableElement(By object) {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(object));
+            wait.until(ExpectedConditions.elementToBeClickable(object));
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
     protected boolean validationClickableElement(WebElement object) {
         try {
             wait.until(ExpectedConditions.visibilityOf(object));
@@ -69,6 +85,7 @@ public class BasePage {
             return false;
         }
     }
+
 
     /**
      * Metodo que nos entregara un objeto de tipo select el cual nos permitira identificar las
