@@ -1,4 +1,4 @@
-package com.Epam_training.actors;
+package com.epam_training.actors;
 
 public class LoginActors {
     private String correctUser;

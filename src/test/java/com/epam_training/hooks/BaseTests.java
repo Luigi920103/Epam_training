@@ -1,6 +1,7 @@
-package com.Epam_training.hooks;
+package com.epam_training.hooks;
 
-import com.Epam_training.pages.HomePage;
+import com.epam_training.pages.HomePage;
+import com.epam_training.properties.ReaderOfProperties;
 import io.cucumber.java.After;
 import io.cucumber.java.AfterStep;
 import io.cucumber.java.Before;
@@ -12,13 +13,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import static com.epam_training.properties.ReaderOfProperties.properties;
 
 public class BaseTests {
     public static WebDriver driver;
-    public static Properties appProps;
+    ReaderOfProperties readProperty = new ReaderOfProperties();
 
     /**
      * En esta clase cargamos las configuraciones del sistema y definimos el webdriver o navegador
@@ -27,16 +26,8 @@ public class BaseTests {
      */
     @Before
     public void openNavigator() {
-        //Carga de propiedades
-        String appConfigPath = "src/test/resources/config.properties";
-        appProps = new Properties();
-        try {
-            appProps.load(new FileInputStream(appConfigPath));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         //Seleccion de webdriver
-        if (appProps.getProperty("navigator").equals("Firefox")) {
+        if (properties.getProperty("navigator").equals("Firefox")) {
             WebDriverManager.firefoxdriver().setup();
             driver = (new FirefoxDriver());
             cleanNavigator();
