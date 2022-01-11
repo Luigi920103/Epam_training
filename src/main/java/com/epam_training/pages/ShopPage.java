@@ -1,19 +1,45 @@
 package com.epam_training.pages;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
 
 import java.util.List;
 
+import static java.lang.Math.round;
+
 public class ShopPage extends BasePage {
 
-    @FindBy(xpath = "//span[@class='onsale'] //parent::*/following::span[@class='price']/ins")
+    @FindBy(css = ".woocommerce-LoopProduct-link .price")
     private List<WebElement> prices;
+
+    @FindBy(css = ".woocommerce-LoopProduct-link")
+    private List<WebElement> results;
+
+    @FindBy(xpath = "//span[@class='onsale'] //parent::*/following::span[@class='price']/ins")
+    private List<WebElement> newPrices;
 
     @FindBy(xpath = "//span[@class='onsale'] //parent::*/following::span[@class='price']/del")
     private List<WebElement> oldPrices;
+
+    //scrolls
+    @FindBy(css = ".price_slider span:nth-child(3)")
+    private WebElement rightLimit;
+
+    @FindBy(css = ".price_slider span:nth-child(2)")
+    private WebElement leftLimit;
+
+    //drop list
+    @FindBy(css = "select[name='orderby']")
+    private WebElement orderByList;
+
+
+    //buttons
+    @FindBy(css = "button[type='submit']")
+    private WebElement filter;
 
     //Labels or messages
     @FindBy(css = "#wpmenucartli > a > span.cartcontents")
@@ -22,12 +48,26 @@ public class ShopPage extends BasePage {
     @FindBy(css = "#wpmenucartli > a > span.amount")
     private WebElement priceCart;
 
+    @FindBy(css = ".price_label .from")
+    private WebElement lowerPriceOnFilter;
+
+    @FindBy(css = ".price_label .to")
+    private WebElement higherPriceOnFilter;
+
     //Local variables
     private double price;
     private boolean isThePriceOnTheScreen;
+    private boolean IsThePriceOnTheRange;
     private String buttonLocatorAfter, buttonLocatorBefore, priceLocator, priceToTake;
     private int randomOption;
+    private int currentLowerPriceOnFilter, tempCurrentValue, tempDesiredValue;
+    private int currentHigherPriceOnFilter;
     private WebElement elementToClick;
+    private ReadMorePage readMorePage;
+
+    private boolean stockValidation;
+
+    Actions act = new Actions(getDriver());
 
     private int accumulatedInTheCart = 0;
 
@@ -40,6 +80,14 @@ public class ShopPage extends BasePage {
 
     public List<WebElement> checkPrices() {
         return prices;
+    }
+
+    public List<WebElement> checkResults() {
+        return results;
+    }
+
+    public List<WebElement> checkNewPrices() {
+        return newPrices;
     }
 
     public List<WebElement> checkOldPrices() {
@@ -69,6 +117,63 @@ public class ShopPage extends BasePage {
         }
         return isThePriceOnTheScreen;
     }
+
+    public boolean validatePriceRange(List<WebElement> object, int lowerLimit, int higherLimit) {
+        List<WebElement> results = object;
+        IsThePriceOnTheRange = true;
+        for (WebElement priceToBeValidated : results) {
+            price = Integer.parseInt(priceToBeValidated.getText().substring(1, priceToBeValidated.getText().indexOf(".")));
+            if (price < lowerLimit && price > higherLimit) {
+                IsThePriceOnTheRange = false;
+                break;
+            }
+        }
+        return IsThePriceOnTheRange;
+    }
+
+    public boolean priceResultsInRange(int lowerLimit, int higherLimit) {
+        if (
+                validatePriceRange(newPrices, lowerLimit, higherLimit) &&
+                        validatePriceRange(prices, lowerLimit, higherLimit)
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public void validateStock(List<WebElement> clickableObject) {
+        List<WebElement> results = clickableObject;
+        boolean flag = false;
+        setStockValidation(true);
+        String selectLinkOpeningNewTab = Keys.chord(Keys.CONTROL, Keys.RETURN);
+        for (WebElement priceToBeValidated : results) {
+            if (flag == false) {
+                readMorePage = openReadMore(priceToBeValidated, selectLinkOpeningNewTab);
+                switchToTab(1);
+                setStockValidation(readMorePage.stockValidation());
+                getDriver().close();
+                flag = true;
+                switchToTab(0);
+            } else {
+                priceToBeValidated.sendKeys(selectLinkOpeningNewTab);
+                switchToTab(1);
+                setStockValidation(readMorePage.stockValidation());
+                getDriver().close();
+                switchToTab(0);
+            }
+            if (isStockValidation() == false) {
+                break;
+            }
+        }
+    }
+
+    ReadMorePage openReadMore(WebElement object, CharSequence command) {
+        object.sendKeys(command);
+        return new ReadMorePage(getDriver());
+    }
+
 
     /**
      * Este metodo selecciona el numero de productos deseado deacuerdo a el valor del parametro
@@ -174,9 +279,60 @@ public class ShopPage extends BasePage {
      * @return entero como cadena de texto sin caracteres de moneda o puntos decimales
      */
     public String priceOnCart() {
-        System.out.println("Acumulado auto <" + getAccumulatedInTheCart() + ">");
-        System.out.println("Acumulado app <" + priceCart.getText().substring(1, priceCart.getText().indexOf(".")) + ">");
         return (priceCart.getText().substring(1, priceCart.getText().indexOf(".")).replace(",", ""));
+    }
+
+    public void setFilterByPrice(int lowerPrice, int higherPrice) {
+        setLocalPrices();
+        if (getCurrentLowerPriceOnFilter() != lowerPrice) {
+            firstApproximationOnFilter(round(lowerPrice - getCurrentLowerPriceOnFilter()) / 2, leftLimit);
+            ApproximationOnFilter(getCurrentLowerPriceOnFilter(), lowerPrice, leftLimit);
+        }
+
+        if (getCurrentHigherPriceOnFilter() != higherPrice) {
+            firstApproximationOnFilter(round(higherPrice - getCurrentHigherPriceOnFilter()) / 2, rightLimit);
+            ApproximationOnFilter(getCurrentHigherPriceOnFilter(), higherPrice, rightLimit);
+        }
+        filter.click();
+    }
+
+    public void ApproximationOnFilter(int currentValue, int desiredValue, WebElement object) {
+
+        while (true) {
+            if (rightLimit == object)
+                tempCurrentValue = getCurrentHigherPriceOnFilter();
+            if (leftLimit == object)
+                tempCurrentValue = getCurrentLowerPriceOnFilter();
+
+            if (tempCurrentValue < desiredValue)
+                act.dragAndDropBy(object, 2, 0).build().perform();
+            if (tempCurrentValue > desiredValue)
+                act.dragAndDropBy(object, -3, 0).build().perform();
+            if (tempCurrentValue == desiredValue)
+                break;
+            setLocalPrices();
+        }
+    }
+
+    public void orderResultsBy(String desiredOrder) {
+        orderByList.click();
+        Select options = new Select(orderByList);
+        options.selectByVisibleText(desiredOrder);
+    }
+
+
+    public void firstApproximationOnFilter(int offset, WebElement object) {
+        act.dragAndDropBy(object, offset, 0).build().perform();
+        setLocalPrices();
+    }
+
+    public void setLocalPrices() {
+        setCurrentLowerPriceOnFilter(cleanPrice(lowerPriceOnFilter.getText()));
+        setCurrentHigherPriceOnFilter(cleanPrice(higherPriceOnFilter.getText()));
+    }
+
+    public int cleanPrice(String number) {
+        return Integer.parseInt(number.substring(1));
     }
 
     //getters and setters
@@ -186,5 +342,37 @@ public class ShopPage extends BasePage {
 
     public void setAccumulatedInTheCart(int accumulatedInTheCart) {
         this.accumulatedInTheCart = accumulatedInTheCart;
+    }
+
+    public boolean isStockValidation() {
+        return stockValidation;
+    }
+
+    public void setStockValidation(boolean stockValidation) {
+        this.stockValidation = stockValidation;
+    }
+
+    public int getCurrentLowerPriceOnFilter() {
+        return currentLowerPriceOnFilter;
+    }
+
+    public void setCurrentLowerPriceOnFilter(int currentLowerPriceOnFilter) {
+        this.currentLowerPriceOnFilter = currentLowerPriceOnFilter;
+    }
+
+    public int getCurrentHigherPriceOnFilter() {
+        return currentHigherPriceOnFilter;
+    }
+
+    public void setCurrentHigherPriceOnFilter(int currentHigherPriceOnFilter) {
+        this.currentHigherPriceOnFilter = currentHigherPriceOnFilter;
+    }
+
+    public boolean isThePriceOnTheRange() {
+        return IsThePriceOnTheRange;
+    }
+
+    public void setThePriceOnTheRange(boolean thePriceOnTheRange) {
+        IsThePriceOnTheRange = thePriceOnTheRange;
     }
 }

@@ -4,12 +4,14 @@ import com.epam_training.actors.ShopActors;
 import com.epam_training.pages.BasketPage;
 import com.epam_training.pages.CheckoutPage;
 import com.epam_training.pages.OrderDetailsPage;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.junit.Assert;
 import org.assertj.core.api.SoftAssertions;
 
+import static com.epam_training.properties.ReaderOfProperties.properties;
 import static com.epam_training.stepDefinitions.BackgroundSteps.shopPage;
 
 public class ShopSteps {
@@ -20,19 +22,22 @@ public class ShopSteps {
     private CheckoutPage checkoutPage;
     private OrderDetailsPage orderDetailsPage;
 
+    private int localLowerPrice;
+    private int localHigherPrice;
+
     private String numberOfBooks;
     private ShopActors user = new ShopActors();
 
     private SoftAssertions softAssert = new SoftAssertions();
 
-    @Then("the user can view the actual price")
+    @Then("the user can view the current price")
     public void validatingPriceOnProduct() {
-        Assert.assertTrue("The price has to be superior to 0", shopPage.validatePrice(shopPage.checkPrices()));
+        Assert.assertTrue(properties.getProperty("priceHasToBeHigherThanZero"), shopPage.validatePrice(shopPage.checkNewPrices()));
     }
 
     @Then("the user can view old price stricken for the sale written products")
     public void validatingOldPriceOnSaleProducts() {
-        Assert.assertTrue("The price has to be superior to 0", shopPage.validatePrice(shopPage.checkOldPrices()));
+        Assert.assertTrue(properties.getProperty("priceHasToBeHigherThanZero"), shopPage.validatePrice(shopPage.checkOldPrices()));
     }
 
     @When("the user selects {string} random books")
@@ -65,7 +70,7 @@ public class ShopSteps {
 
     @Then("the total price is higher than subtotal")
     public void validatingTotalPriceIsHigherThanSubtotal() {
-        Assert.assertTrue("The subTotal is lower than the Total", basketPage.subtotalLowerThanTotal());
+        Assert.assertTrue(properties.getProperty("subTotalLowerThanTotal"), basketPage.subtotalLowerThanTotal());
     }
 
     @And("the user proceeds to checkout")
@@ -113,10 +118,37 @@ public class ShopSteps {
     }
 
     @Then("the user should see the order details, bank details,customer details and billing details")
-    public void theUserShouldSeeTheOrderDetailsBankDetailsCustomerDetailsAndBillingDetails() {
+    public void validationsOnPage() {
         softAssert.assertThat(orderDetailsPage.bankDetailsOnScreen()).isEqualTo(true);
         softAssert.assertThat(orderDetailsPage.orderDetailsOnScreen()).isEqualTo(true);
         softAssert.assertAll();
+    }
+
+    @Then("the {string} should be correct")
+    public void taxValidation(String condition) {
+        Assert.assertTrue(properties.getProperty("correctTaxAccordingLocation"), basketPage.taxValidation(condition));
+    }
+
+    @When("the user opens the read more on each product")
+    public void addButtonAccordingStock() {
+        shopPage.validateStock(shopPage.checkResults());
+    }
+
+    @Then("it has to have the add button according to its stock")
+    public void addButtonAccordingStockAssertion() {
+        Assert.assertTrue("The add button has to be active according the stock of the product", shopPage.isStockValidation());
+    }
+
+    @When("the user filter by price between {int} to {int}")
+    public void filterByPrice(int lowerPrice, int higherPrice) {
+        setLocalLowerPrice(lowerPrice);
+        setLocalHigherPrice(higherPrice);
+        shopPage.setFilterByPrice(lowerPrice, higherPrice);
+    }
+
+    @Then("the products show it a price in that range")
+    public void validatingTheRangeOfPrices() {
+        Assert.assertTrue("Los precios deben estar en el rango esperadpo", shopPage.priceResultsInRange(getLocalLowerPrice(), getLocalHigherPrice()));
     }
 
     public String getNumberOfBooks() {
@@ -127,4 +159,32 @@ public class ShopSteps {
         this.numberOfBooks = numberOfBooks;
     }
 
+
+    public int getLocalLowerPrice() {
+        return localLowerPrice;
+    }
+
+    public void setLocalLowerPrice(int localLowerPrice) {
+        this.localLowerPrice = localLowerPrice;
+    }
+
+    public int getLocalHigherPrice() {
+        return localHigherPrice;
+    }
+
+    public void setLocalHigherPrice(int localHigherPrice) {
+        this.localHigherPrice = localHigherPrice;
+    }
+
+    @When("the user order the results by {string}")
+    public void theUserOrderTheResultsBy(String orderBy) {
+        shopPage.orderResultsBy(orderBy);
+    }
+
+    @Then("the user has to see the results order by {string}")
+    public void theUserHasToSeeTheResultsOrderBy(String arg0) {
+        //todo Logic to validate the different orders
+        //switch case to distinguish the case
+        //todo logic to validate order on prices
+    }
 }

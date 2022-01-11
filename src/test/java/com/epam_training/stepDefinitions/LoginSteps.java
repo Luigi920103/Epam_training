@@ -13,15 +13,17 @@ public class LoginSteps {
     private LoginActors actor = new LoginActors();
     //Local variables
     private String localUser, localPassword;
+    //Text if we want to use the credentials of a correct user
+    private String correctUser = "Correct";
 
     private BackgroundSteps pageObject;
 
     @When("it log in with the credentials {string}, {string}")
     public void loginWithCredentials(String user, String password) {
-        if (user.equals("Correct"))
+        if (user.equals(correctUser))
             localUser = actor.getCorrectUser();
         else localUser = user;
-        if (password.equals("Correct"))
+        if (password.equals(correctUser))
             localPassword = actor.getCorrectPassword();
         else localPassword = password;
         loginPage.signIn(localUser, localPassword);
